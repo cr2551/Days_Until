@@ -20,6 +20,10 @@ import subprocess
 
 future = None
 
+# dates_file = 'mine.csv'
+dates_file = 'dates.csv'
+
+
 def calc_days():
     global future
     today = datetime.date.today()
@@ -46,9 +50,9 @@ def save_date():
     today = datetime.date.today()
     # don't let falsy values be stored
     if future:
-        dates_dict[event_name] = future
+        dates_dict[event_name] = str(future)
 
-    with open('dates.csv', 'w') as f:
+    with open(dates_file, 'w') as f:
         writer = csv.writer(f)
         writer.writerow(dates_dict.keys())
         writer.writerow(dates_dict.values())
@@ -59,7 +63,7 @@ def save_date():
 
 
 def load_dates():
-    with open('dates.csv', 'r') as csvfile:
+    with open(dates_file, 'r') as csvfile:
         csvreader = csv.DictReader(csvfile)
         row = {} # fallback val in case file is empty
         for row in csvreader:
@@ -76,7 +80,7 @@ def update_dates(dates_dict):
 def delete_entry(entry_key):
     global dates_dict
     dates_dict.pop(entry_key)
-    with open('dates.csv', 'w') as f:
+    with open(dates_file, 'w') as f:
         writer = csv.writer(f)
         writer.writerow(dates_dict.keys())
         writer.writerow(dates_dict.values())
@@ -126,8 +130,8 @@ def add_reminder(key):
             print(rem)
         if key not in rem:
             rem[key] = []
-        else:
-            rem[key].append(new_reminder)
+        
+        rem[key].append(new_reminder)
     except Exception as e:
         label = tk.Label(top_frm, text=e)
         label.pack()
