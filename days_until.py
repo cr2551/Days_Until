@@ -7,6 +7,7 @@ Create the ability to set reminders and alerts when there are x days left for a 
 
 import tkinter as tk
 from tkinter import ttk
+import ttkthemes
 import csv
 from tkcalendar import Calendar, DateEntry
 import datetime
@@ -19,6 +20,7 @@ def calc_days():
     today = datetime.date.today()
     # get_date() method returns the date as a datetime object
     future = date_picker.get_date()
+    print(future)
     days_left = future - today
     event_name = cal_event.get()
     days_label = tk.Label(root, text=days_left)
@@ -28,19 +30,11 @@ def calc_days():
     
 
 
-saved_dates = {}
 def save_date():
     global future
-    dates_dict = {}
-    # read csv file
-    with open('dates.csv', 'r') as csvfile:
-        csvreader = csv.DictReader(csvfile)
-        row = None
-        for row in csvreader:
-            pass
-        if row:
-            dates_dict = row
+    global dates_dict
     event_name = cal_event.get()
+    print(future)
     if not event_name:
         event_name = random.randint(0,100)
     today = datetime.date.today()
@@ -57,46 +51,88 @@ def save_date():
 def load_dates():
     with open('dates.csv', 'r') as csvfile:
         csvreader = csv.DictReader(csvfile)
-        row = None
+        row = {} # fallback val in case file is empty
         for row in csvreader:
             pass
-        if row:
-            dates_dict = row
-        else: # is empty there is nothing to load
-            return
-        # print(csvreader)
-        today = datetime.date.today()
-        for k, v in dates_dict.items():
-            future = datetime.datetime.strptime(v, "%Y-%m-%d").date()
-            days_left = future - today
-            text = f"{days_left} days until {k}"
-            label = tk.Label(root, text=text)
-            label.pack()
-        finished_label = tk.Label(root, text="finished loading")
-        finished_label.pack()
+        print(row)
+        return row
+
+def update_dates():
+    # loop through the widgets in the parent widget and destroy them, then put the updated dates.
+    for widget in entries_frame.winfo_children():
+        widget.destroy()
+    print_dates()
+
+def delete_entry(entry_key):
+    dates_dict.pop(entry_key)
+    with open('dates.csv', 'w') as f:
+        writer = csv.writer(f)
+        writer.writerow(dates_dict.keys())
+        writer.writerow(dates_dict.values())
+    # print_dates()
+    update_dates()
+
+
+
+def print_dates():
+    global dates_dict
+    today = datetime.date.today()
+    if not dates_dict:
+        return
+    for k, v in dates_dict.items():
+        future = datetime.datetime.strptime(v, "%Y-%m-%d").date()
+        days_left = future - today # return a datetime.timedelta object => 12 days, 0:00:00
+        days_left = days_left.days
+        text = f"{days_left} days until {k}, {future}"
+        label = ttk.Label(entries_frame, text=text)
+        del_btn = ttk.Button(entries_frame, text='delete', command=lambda: delete_entry(k))
+        label.pack(expand=False, fill='none')
+        del_btn.pack()
+    finished_label = tk.Label(root, text="finished loading")
+    finished_label.pack()
+
+
+
 
 root = tk.Tk()
 root.title("Tkinter Intro")
 
+style = ttkthemes.ThemedStyle(root)
+style.set_theme('plastik')
 
-load_dates_button = tk.Button(root, text="load saved dates", command=load_dates)
-load_dates_button.pack()
+top_frm = ttk.Frame(root, padding=15)
+top_frm.pack()
 
 
-date_picker = DateEntry(root)
-date_picker.pack()
 
-cal_event = tk.Entry(root)
-cal_event.pack()
+header = ttk.Label(top_frm, text="Days Until", font=(18))
+header.pack(pady=8)
 
-calc_days_btn = tk.Button(root, text="calculate days!", command=calc_days)
-calc_days_btn.pack()
+load_dates_button = ttk.Button(top_frm, text="load", command=print_dates)
+# load_dates_button.pack()
 
-save_button = tk.Button(root, text='save Date', command=save_date)
-save_button.pack()
+date_input_frm = ttk.Frame(top_frm, padding=8)
+cal_event = ttk.Entry(date_input_frm)
+cal_event.pack(side='left', padx=10)
 
-label = tk.Label(root, text=" ")
-label.pack()
+date_picker = DateEntry(date_input_frm)
+date_picker.pack(side='right')
+date_input_frm.pack()
 
+calc_days_btn = ttk.Button(top_frm, text="calculate days", command=calc_days)
+calc_days_btn.pack(pady=8)
+
+entries_frame = ttk.Frame(root, padding=5)
+entries_frame.pack()
+
+dates_dict = load_dates() # load dates automatically
+print_dates()
+
+save_button = ttk.Button(top_frm, text='save Date', command=save_date)
+
+
+quit_button = ttk.Button(top_frm, text='Quit', command=root.destroy)
+quit_button.pack(side='bottom')
+save_button.pack(side='bottom', pady=0)
 
 root.mainloop()

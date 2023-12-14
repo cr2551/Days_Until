@@ -1,4 +1,4 @@
 # Todo
 
-1. only read the file once
-2. 
+1. add ability to delete entries
+2. add placeholder for entry
