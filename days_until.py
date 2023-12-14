@@ -34,7 +34,7 @@ def calc_days():
     event_name = cal_event.get()
     days_label = tk.Label(root, text=days_left)
     days_label.pack()
-    if not event_name:
+    if not event_name or event_name == placeholder_text:
         event_name = future
     text = f"{days_left} days until {event_name}"
     days_label.config(text=text)
@@ -45,7 +45,7 @@ def save_date():
     global dates_dict
     event_name = cal_event.get()
     print(future)
-    if not event_name:
+    if not event_name or event_name == placeholder_text:
         event_name = random.randint(0,100)
     today = datetime.date.today()
     # don't let falsy values be stored
@@ -159,12 +159,12 @@ def print_dates(dates_dict):
         entry_frame = ttk.Frame(entries_frame, padding=4)
         days_label = ttk.Label(entry_frame, text=days_left, foreground='blue')
         label = ttk.Label(entry_frame, text=text)
-        del_btn = ttk.Button(entry_frame, text=f'delete {k}', command=partial(delete_entry, k))
+        del_btn = ttk.Button(entry_frame, text=f'delete', command=partial(delete_entry, k))
         add_reminder_btn = ttk.Button(entry_frame, text='add reminder', command=partial(add_reminder, k))
 
         days_label.pack(side='left')
-        label.pack(anchor=tk.W, side='left', padx=5)
-        del_btn.pack(side='left')
+        label.pack(anchor=tk.W, side='left', padx=8)
+        del_btn.pack(side='left', padx=5)
         add_reminder_btn.pack()
         entry_frame.pack()
     
@@ -177,6 +177,22 @@ def notify_func():
     title = 'hi'
     message = 'hello world'
     subprocess.run(['notify-send', title, message])
+
+
+# functions for entry placeholder
+def on_entry_focus_in(event):
+    if cal_event.get() == placeholder_text:
+        cal_event.delete(0, tk.END)
+        cal_event.configure(show='')
+        cal_event.configure(foreground='black')
+
+def on_entry_focus_out(event):
+    if cal_event.get() == '':
+        cal_event.insert(0, placeholder_text)
+        cal_event.configure(foreground='gray')
+
+
+
 
 
 root = tk.Tk()
@@ -199,6 +215,11 @@ load_dates_button = ttk.Button(top_frm, text="load", command=print_dates)
 date_input_frm = ttk.Frame(top_frm, padding=8)
 cal_event = ttk.Entry(date_input_frm)
 cal_event.pack(side='left', padx=10)
+placeholder_text = "Enter event name"
+cal_event.insert(0, placeholder_text)
+cal_event.configure(foreground='gray')
+cal_event.bind("<FocusIn>", on_entry_focus_in)
+cal_event.bind("<FocusOut>", on_entry_focus_out)
 
 date_picker = DateEntry(date_input_frm)
 date_picker.pack(side='right')
@@ -214,7 +235,7 @@ dates_dict = load_dates() # load dates automatically
 print_dates(dates_dict)
 
 notify_btn = ttk.Button(top_frm, text='notification', command=notify_func)
-notify_btn.pack()
+# notify_btn.pack()
 
 order_button = ttk.Button(top_frm, text='order', command=order_by)
 order_button.pack()
