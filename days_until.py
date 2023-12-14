@@ -17,9 +17,11 @@ import datetime
 import random
 from functools import partial
 import subprocess
+import os
 
 future = None
 
+# dates_file = 'none.csv'
 # dates_file = 'mine.csv'
 dates_file = 'dates.csv'
 
@@ -63,13 +65,17 @@ def save_date():
 
 
 def load_dates():
-    with open(dates_file, 'r') as csvfile:
-        csvreader = csv.DictReader(csvfile)
-        row = {} # fallback val in case file is empty
-        for row in csvreader:
+    try:
+        with open(dates_file, 'r') as csvfile:
+            csvreader = csv.DictReader(csvfile)
+            row = {} # fallback val in case file is empty
+            for row in csvreader:
+                pass
+            return row
+    except FileNotFoundError as e:
+        with open(dates_file, 'x') as file:
             pass
-        print(row)
-        return row
+        return {} # empty dictionary for dates_dict var
 
 def update_dates(dates_dict):
     # loop through the widgets in the parent widget and destroy them, then put the updated dates.
@@ -117,6 +123,8 @@ def order_by():
     sorted_dict = dict(sorted(dates_dict.items(), key=str_to_days, reverse=rev))
     update_dates(sorted_dict)
 
+
+# there is some repetition here that needs to be eliminated.
 def add_reminder(key):
     # remind again when there is 'new_reminder' days left
     new_reminder = 8
@@ -132,15 +140,17 @@ def add_reminder(key):
             rem[key] = []
         
         rem[key].append(new_reminder)
-    except Exception as e:
+    except FileNotFoundError as e:
         label = tk.Label(top_frm, text=e)
-        label.pack()
+        # label.pack()
         rem = {}
+        rem[key] = []
+        rem[key].append(new_reminder)
 
     with open('reminders.json', 'w') as reminders:
         reminders_dump = json.dump(rem, reminders)
-        print(reminders_dump)
-        # reminders.write(reminders_dump)
+  
+     
 
 
 
