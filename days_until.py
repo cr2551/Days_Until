@@ -9,11 +9,14 @@ Create the ability to set reminders and alerts when there are x days left for a 
 import tkinter as tk
 from tkinter import ttk
 import ttkthemes
+# import notify2
 import csv
+import json
 from tkcalendar import Calendar, DateEntry
 import datetime
 import random
 from functools import partial
+import subprocess
 
 future = None
 
@@ -27,10 +30,11 @@ def calc_days():
     event_name = cal_event.get()
     days_label = tk.Label(root, text=days_left)
     days_label.pack()
+    if not event_name:
+        event_name = future
     text = f"{days_left} days until {event_name}"
     days_label.config(text=text)
     
-
 
 def save_date():
     global future
@@ -40,12 +44,16 @@ def save_date():
     if not event_name:
         event_name = random.randint(0,100)
     today = datetime.date.today()
-    dates_dict[event_name] = future
+    # don't let falsy values be stored
+    if future:
+        dates_dict[event_name] = future
 
     with open('dates.csv', 'w') as f:
         writer = csv.writer(f)
         writer.writerow(dates_dict.keys())
         writer.writerow(dates_dict.values())
+    
+    update_dates(dates_dict)
         
 
 
@@ -73,11 +81,26 @@ def delete_entry(entry_key):
         writer.writerow(dates_dict.keys())
         writer.writerow(dates_dict.values())
     # print_dates()
-    update_dates()
+    update_dates(dates_dict)
 
 
 def order_by():
     global dates_dict
+    global current_order
+    # flip through the different orderings
+    # 'none' is the order the entries were added.
+    if current_order == 'none':
+        current_order = 'desc'
+        rev = False
+    elif current_order == 'desc':
+        current_order = 'asc'
+        rev = True
+    elif current_order == 'asc':
+        current_order = 'none'
+        update_dates(dates_dict)
+        return
+    
+
     today = datetime.date.today()
 
     def str_to_days(item: tuple):
@@ -87,11 +110,35 @@ def order_by():
         days_left = days_left.days
         return days_left
         # new_dict['k'] = days_left
-    sorted_dict = dict(sorted(dates_dict.items(), key=str_to_days))
-    print(sorted_dict)
-
-
+    sorted_dict = dict(sorted(dates_dict.items(), key=str_to_days, reverse=rev))
     update_dates(sorted_dict)
+
+def add_reminder(key):
+    # remind again when there is 'new_reminder' days left
+    new_reminder = 8
+    try:
+        with open('reminders.json', 'r') as reminders:
+            rem = reminders.read()
+            if not rem:
+                rem = {}
+            else:
+                rem = json.loads(rem)
+            print(rem)
+        if key not in rem:
+            rem[key] = []
+        else:
+            rem[key].append(new_reminder)
+    except Exception as e:
+        label = tk.Label(top_frm, text=e)
+        label.pack()
+        rem = {}
+
+    with open('reminders.json', 'w') as reminders:
+        reminders_dump = json.dump(rem, reminders)
+        print(reminders_dump)
+        # reminders.write(reminders_dump)
+
+
 
 def print_dates(dates_dict):
     # global dates_dict
@@ -109,13 +156,23 @@ def print_dates(dates_dict):
         days_label = ttk.Label(entry_frame, text=days_left, foreground='blue')
         label = ttk.Label(entry_frame, text=text)
         del_btn = ttk.Button(entry_frame, text=f'delete {k}', command=partial(delete_entry, k))
+        add_reminder_btn = ttk.Button(entry_frame, text='add reminder', command=partial(add_reminder, k))
+
         days_label.pack(side='left')
         label.pack(anchor=tk.W, side='left', padx=5)
         del_btn.pack(side='left')
+        add_reminder_btn.pack()
         entry_frame.pack()
     
 
-
+def notify_func():
+    # notify2 needs dbus, so you need to be running a desktop environment like GNOME or KDE
+    # notify2.init("tkinter app")
+    # notification = notify2.Notification('HEllo!', 'this is a message')
+    # notification.show()
+    title = 'hi'
+    message = 'hello world'
+    subprocess.run(['notify-send', title, message])
 
 
 root = tk.Tk()
@@ -127,7 +184,7 @@ style.set_theme('plastik')
 top_frm = ttk.Frame(root, padding=15)
 top_frm.pack()
 
-
+current_order = 'none'
 
 header = ttk.Label(top_frm, text="Days Until", font=(18))
 header.pack(pady=8)
@@ -151,6 +208,9 @@ entries_frame.pack()
 
 dates_dict = load_dates() # load dates automatically
 print_dates(dates_dict)
+
+notify_btn = ttk.Button(top_frm, text='notification', command=notify_func)
+notify_btn.pack()
 
 order_button = ttk.Button(top_frm, text='order', command=order_by)
 order_button.pack()
