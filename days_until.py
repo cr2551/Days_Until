@@ -59,17 +59,15 @@ def load_dates():
         print(row)
         return row
 
-def update_dates():
+def update_dates(dates_dict):
     # loop through the widgets in the parent widget and destroy them, then put the updated dates.
     for widget in entries_frame.winfo_children():
         widget.destroy()
-    print_dates()
+    print_dates(dates_dict)
 
 def delete_entry(entry_key):
     global dates_dict
-    print(entry_key)
     dates_dict.pop(entry_key)
-    print(dates_dict)
     with open('dates.csv', 'w') as f:
         writer = csv.writer(f)
         writer.writerow(dates_dict.keys())
@@ -78,10 +76,25 @@ def delete_entry(entry_key):
     update_dates()
 
 
-
-
-def print_dates():
+def order_by():
     global dates_dict
+    today = datetime.date.today()
+
+    def str_to_days(item: tuple):
+        v = item[1]
+        date = datetime.datetime.strptime(v, "%Y-%m-%d").date()
+        days_left = date - today
+        days_left = days_left.days
+        return days_left
+        # new_dict['k'] = days_left
+    sorted_dict = dict(sorted(dates_dict.items(), key=str_to_days))
+    print(sorted_dict)
+
+
+    update_dates(sorted_dict)
+
+def print_dates(dates_dict):
+    # global dates_dict
     today = datetime.date.today()
     if not dates_dict:
         return
@@ -96,23 +109,17 @@ def print_dates():
         days_label = ttk.Label(entry_frame, text=days_left, foreground='blue')
         label = ttk.Label(entry_frame, text=text)
         del_btn = ttk.Button(entry_frame, text=f'delete {k}', command=partial(delete_entry, k))
-
         days_label.pack(side='left')
         label.pack(anchor=tk.W, side='left', padx=5)
         del_btn.pack(side='left')
         entry_frame.pack()
-        #new line 
-        # new_line = ttk.Label(entries_frame, text='')
-        # new_line.pack()
     
-    finished_label = tk.Label(root, text="finished loading")
-    finished_label.pack()
 
 
 
 
 root = tk.Tk()
-root.title("Tkinter Intro")
+root.title("Days Until")
 
 style = ttkthemes.ThemedStyle(root)
 style.set_theme('plastik')
@@ -143,7 +150,10 @@ entries_frame = ttk.Frame(top_frm, padding=5)
 entries_frame.pack()
 
 dates_dict = load_dates() # load dates automatically
-print_dates()
+print_dates(dates_dict)
+
+order_button = ttk.Button(top_frm, text='order', command=order_by)
+order_button.pack()
 
 save_button = ttk.Button(top_frm, text='save Date', command=save_date)
 
