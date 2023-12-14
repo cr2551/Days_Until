@@ -3,6 +3,7 @@ Pick a date in the future and calculate how much time there is left until said d
 You can save and delete entries. Those entries will have the option of being updated 
 by the minute when the program is running.
 Create the ability to set reminders and alerts when there are x days left for a given entry.
+
 """
 
 import tkinter as tk
@@ -12,6 +13,7 @@ import csv
 from tkcalendar import Calendar, DateEntry
 import datetime
 import random
+from functools import partial
 
 future = None
 
@@ -64,13 +66,17 @@ def update_dates():
     print_dates()
 
 def delete_entry(entry_key):
+    global dates_dict
+    print(entry_key)
     dates_dict.pop(entry_key)
+    print(dates_dict)
     with open('dates.csv', 'w') as f:
         writer = csv.writer(f)
         writer.writerow(dates_dict.keys())
         writer.writerow(dates_dict.values())
     # print_dates()
     update_dates()
+
 
 
 
@@ -83,11 +89,22 @@ def print_dates():
         future = datetime.datetime.strptime(v, "%Y-%m-%d").date()
         days_left = future - today # return a datetime.timedelta object => 12 days, 0:00:00
         days_left = days_left.days
-        text = f"{days_left} days until {k}, {future}"
-        label = ttk.Label(entries_frame, text=text)
-        del_btn = ttk.Button(entries_frame, text='delete', command=lambda: delete_entry(k))
-        label.pack(expand=False, fill='none')
-        del_btn.pack()
+        text = f"days until {k}, {future}"
+        # text = f"{days_left} days until {k}, {future}"
+
+        entry_frame = ttk.Frame(entries_frame, padding=4)
+        days_label = ttk.Label(entry_frame, text=days_left, foreground='blue')
+        label = ttk.Label(entry_frame, text=text)
+        del_btn = ttk.Button(entry_frame, text=f'delete {k}', command=partial(delete_entry, k))
+
+        days_label.pack(side='left')
+        label.pack(anchor=tk.W, side='left', padx=5)
+        del_btn.pack(side='left')
+        entry_frame.pack()
+        #new line 
+        # new_line = ttk.Label(entries_frame, text='')
+        # new_line.pack()
+    
     finished_label = tk.Label(root, text="finished loading")
     finished_label.pack()
 
@@ -122,7 +139,7 @@ date_input_frm.pack()
 calc_days_btn = ttk.Button(top_frm, text="calculate days", command=calc_days)
 calc_days_btn.pack(pady=8)
 
-entries_frame = ttk.Frame(root, padding=5)
+entries_frame = ttk.Frame(top_frm, padding=5)
 entries_frame.pack()
 
 dates_dict = load_dates() # load dates automatically
