@@ -176,7 +176,7 @@ def print_dates(dates_dict):
         # spinbox for selecting when to remind
         # assoaciate with a StringVar to pass that value to the partial function so that the spinbox is assocaited with the button
         spinbox_var = tk.StringVar()
-        spinbox = ttk.Spinbox(entries_frame, from_=1, to=20, width=4, textvariable=spinbox_var)
+        spinbox = ttk.Spinbox(entry_frame, from_=1, to=20, width=4, textvariable=spinbox_var)
         add_reminder_btn = ttk.Button(entry_frame, text='add reminder', command=partial(add_reminder, k, spinbox_var))
 
 
@@ -184,8 +184,8 @@ def print_dates(dates_dict):
         days_label.pack(side='left')
         label.pack(anchor=tk.W, side='left', padx=8)
         del_btn.pack(side='left', padx=5)
-        spinbox.pack(padx=3)
-        add_reminder_btn.pack()
+        spinbox.pack(side='left', padx=3)
+        add_reminder_btn.pack(side='left')
         entry_frame.pack()
     
 
