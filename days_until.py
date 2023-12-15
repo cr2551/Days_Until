@@ -125,9 +125,10 @@ def order_by():
 
 
 # there is some repetition here that needs to be eliminated.
-def add_reminder(key):
+def add_reminder(key, spinvar):
     # remind again when there is 'new_reminder' days left
-    new_reminder = 8
+    print(spinvar.get())
+    new_reminder = int(spinvar.get())
     try:
         with open('reminders.json', 'r') as reminders:
             rem = reminders.read()
@@ -135,17 +136,19 @@ def add_reminder(key):
                 rem = {}
             else:
                 rem = json.loads(rem)
-            print(rem)
+
         if key not in rem:
-            rem[key] = []
+            rem[key] = {}
         
-        rem[key].append(new_reminder)
+        rem[key]['date'] = dates_dict[key]
+        rem[key]['reminders'] = new_reminder
     except FileNotFoundError as e:
         label = tk.Label(top_frm, text=e)
         # label.pack()
         rem = {}
-        rem[key] = []
-        rem[key].append(new_reminder)
+        rem[key] = {}
+        rem[key]['date'] = dates_dict[key]
+        rem[key]['reminders'] = new_reminder
 
     with open('reminders.json', 'w') as reminders:
         reminders_dump = json.dump(rem, reminders)
@@ -170,11 +173,18 @@ def print_dates(dates_dict):
         days_label = ttk.Label(entry_frame, text=days_left, foreground='blue')
         label = ttk.Label(entry_frame, text=text)
         del_btn = ttk.Button(entry_frame, text=f'delete', command=partial(delete_entry, k))
-        add_reminder_btn = ttk.Button(entry_frame, text='add reminder', command=partial(add_reminder, k))
+        # spinbox for selecting when to remind
+        # assoaciate with a StringVar to pass that value to the partial function so that the spinbox is assocaited with the button
+        spinbox_var = tk.StringVar()
+        spinbox = ttk.Spinbox(entries_frame, from_=1, to=20, width=4, textvariable=spinbox_var)
+        add_reminder_btn = ttk.Button(entry_frame, text='add reminder', command=partial(add_reminder, k, spinbox_var))
+
+
 
         days_label.pack(side='left')
         label.pack(anchor=tk.W, side='left', padx=8)
         del_btn.pack(side='left', padx=5)
+        spinbox.pack(padx=3)
         add_reminder_btn.pack()
         entry_frame.pack()
     
@@ -247,7 +257,7 @@ print_dates(dates_dict)
 notify_btn = ttk.Button(top_frm, text='notification', command=notify_func)
 # notify_btn.pack()
 
-order_button = ttk.Button(top_frm, text='order', command=order_by)
+order_button = ttk.Button(top_frm, text='sort', command=order_by)
 order_button.pack()
 
 save_button = ttk.Button(top_frm, text='save Date', command=save_date)

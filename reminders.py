@@ -1,6 +1,9 @@
 import tkinter as tk
 from tkcalendar import DateEntry
 import datetime
+import threading
+import time
+import subprocess
 
 class CalendarEvent:
     def __init__(self, title, event_time, reminder_time):
@@ -21,6 +24,10 @@ class CalendarApp:
         self.reminder_time_entry = tk.Entry(root, width=30)
         self.add_event_button = tk.Button(root, text="Add Event", command=self.add_event)
         self.event_listbox = tk.Listbox(root, width=40, height=10)
+        self.quit_button = tk.Button(root, text="Quit", command=self.root.destroy)
+        
+        self.spinbox = tk.Spinbox(root, from_=1, to=20, width=5)
+        self.spinbox.pack(pady=6)
 
         # Pack GUI Components
         self.title_entry.pack(pady=5)
@@ -28,9 +35,14 @@ class CalendarApp:
         self.reminder_time_entry.pack(pady=5)
         self.add_event_button.pack(pady=5)
         self.event_listbox.pack(pady=10)
+        self.quit_button.pack(pady=5)
 
+        name = "***********************--=========== This is my python thread =========----------******************************"
+        self.reminder_thread = threading.Thread(target=self.check_reminders, name=name)
+        self.reminder_thread.daemon = True
+        self.reminder_thread.start()
         # Start the reminder loop
-        self.check_reminders()
+        # self.check_reminders()
 
     def add_event(self):
         title = self.title_entry.get()
@@ -61,6 +73,7 @@ class CalendarApp:
             if 0 <= reminder_difference.total_seconds() <= 60:
                 # print(f"Reminder: {event.title} is approaching in {time_difference.total_seconds()} seconds.")
                 print(f"Reminder: {event.title} is approaching in {time_difference.total_seconds()} seconds.")
+                subprocess.run(['notify-send', event.title])
 
             if time_difference.total_seconds() <= 0:
                 print(f"Event: {event.title} is happening now!")
