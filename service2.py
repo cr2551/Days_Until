@@ -1,12 +1,16 @@
 # Use this code if you want to create a systemd service.
 # creating a daemon as in daemon.py will not work with systemd
+# this works. If it stops working, the problem is related to something else.
 
 
 import time
 import subprocess
 import datetime
 import json
+import os
 
+script_dir = os.path.dirname(os.path.abspath(__file__))
+reminders_path = os.path.join(script_dir, 'reminders.json')
 
 def send_notif(event, days):
     """see man notify-send for more options"""
@@ -22,10 +26,12 @@ def send_notif(event, days):
 # it would be better if it only did it once or every so often until the user takes an action
 while True:
     try:
-        with open('reminders.json', 'r') as f:
+        with open(reminders_path, 'r') as f:
             rem = f.read()
     except Exception as e:
+        print('No reminders yet')
         print(e)
+        exit(1)
 
 # parse date
     reminders = json.loads(rem)
