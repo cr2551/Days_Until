@@ -16,7 +16,7 @@ them.
 ## Details
 
 This is GUI python app using Tkinter. The dates are stored as key value pairs in a csv file.
-Reminders function is still in development.
+Running the install daemon script with root privileges will start the reminders/notification service.
 
 ## Installation
 

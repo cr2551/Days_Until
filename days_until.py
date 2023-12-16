@@ -23,7 +23,13 @@ future = None
 
 # dates_file = 'none.csv'
 # dates_file = 'mine.csv'
+script_path = os.path.dirname(os.path.abspath(__file__))
+
 dates_file = 'dates.csv'
+dates_file = os.path.join(script_path, dates_file)
+
+reminders_file_name = 'reminders.json'
+reminders_file_path = os.path.join(script_path, reminders_file_name)
 
 
 def calc_days():
@@ -130,7 +136,7 @@ def add_reminder(key, spinvar):
     print(spinvar.get())
     new_reminder = int(spinvar.get())
     try:
-        with open('reminders.json', 'r') as reminders:
+        with open(reminders_file_path, 'r') as reminders:
             rem = reminders.read()
             if not rem:
                 rem = {}
@@ -150,7 +156,7 @@ def add_reminder(key, spinvar):
         rem[key]['date'] = dates_dict[key]
         rem[key]['reminders'] = new_reminder
 
-    with open('reminders.json', 'w') as reminders:
+    with open(reminders_file_path, 'w') as reminders:
         reminders_dump = json.dump(rem, reminders)
   
      
