@@ -258,13 +258,13 @@ notify_btn = ttk.Button(top_frm, text='notification', command=notify_func)
 # notify_btn.pack()
 
 order_button = ttk.Button(top_frm, text='sort', command=order_by)
-order_button.pack()
+order_button.pack(pady=3)
 
 save_button = ttk.Button(top_frm, text='save Date', command=save_date)
 
 
 quit_button = ttk.Button(top_frm, text='Quit', command=root.destroy)
-quit_button.pack(side='bottom')
-save_button.pack(side='bottom', pady=0)
+quit_button.pack(side='bottom', pady=3)
+save_button.pack(side='bottom', pady=3)
 
 root.mainloop()

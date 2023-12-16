@@ -24,6 +24,7 @@ def send_notif(event, days):
 
 # the problem with this code is that it will continue issuing notifications every 10secs for the same events
 # it would be better if it only did it once or every so often until the user takes an action
+# I am thinking of deleting the reminder from the dictionary once the notification is issued.
 while True:
     try:
         with open(reminders_path, 'r') as f:

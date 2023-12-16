@@ -5,6 +5,7 @@ SERVICE_NAME="daysu_daemon@"
 SERVICE_FILE="$SERVICE_NAME.service"
 SERVICE_DESTINATION="/etc/systemd/system/"
 
+# $EUID stand for Effective User Id, and it is set to zero when the user is root.
 if [[ "$EUID" -ne 0 ]]; then
     echo "script must be run as root"
     exit 1
