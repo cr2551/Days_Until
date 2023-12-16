@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Pick a date in the future and calculate how much time there is left until said date.
 You can save and delete entries. Those entries will have the option of being updated 
@@ -9,7 +10,6 @@ Create the ability to set reminders and alerts when there are x days left for a 
 import tkinter as tk
 from tkinter import ttk
 import ttkthemes
-# import notify2
 import csv
 import json
 from tkcalendar import Calendar, DateEntry
